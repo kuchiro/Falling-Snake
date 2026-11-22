@@ -56,16 +56,18 @@ public class Canon implements KeyListener{
 	}
 	
 	public void move() { // Fonction qui verifie si la balle touche une des entités ou sort de l'interface
-		for(int i = 0; i < shots.size();i++) {
+		// On parcourt la liste à l'envers : retirer la balle i ne décale pas celles qu'il reste à traiter,
+		// et les autres balles continuent d'avancer même quand l'une d'elles touche quelque chose
+		for(int i = shots.size() - 1; i >= 0; i--) {
 			if(snakeCollision(i)) { // Si la balle entre en collision avec le serpent
-				return;
+				continue;
 			}
 			if(obstacleCollision(i)) { // Si la balle entre en collision avec un obstacle
-				return;
+				continue;
 			}
 			if(shots.get(i).getCoordBullet().getY() == -1) { // Si la balle est en dehors de l'interface alors on l'enlève
 				shots.remove(i);
-				return;
+				continue;
 			}
 			shots.get(i).setCoordBullet(new Coordinate (coordNewBulletX(i),coordNewBulletY(i))); // s'il n'y a eu aucun des cas on fait avancé la balle
 		} 

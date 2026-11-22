@@ -19,7 +19,9 @@ public class Snake {
 	private int INITSIZE = 3;
 	
 	private ArrayList<Coordinate> body;
-	
+
+	private ArrayList<Coordinate> previousBody; // Le corps au tick précédent, pour animer le déplacement
+
 	private Game game;
 	
 	private Direction directionSnake;
@@ -37,6 +39,7 @@ public class Snake {
 		for (int i = 0; i < INITSIZE; i++) {
 			body.add(new Coordinate(start.getX() + i, start.getY()));
 		}
+		previousBody = new ArrayList<>(body);
 	}
 
 	public void setAliveSnake(boolean aliveSnake) {
@@ -61,6 +64,10 @@ public class Snake {
 
 	public ArrayList<Coordinate> getSnakeBody() {
 		return body;
+	}
+
+	public ArrayList<Coordinate> getPreviousBody() {
+		return previousBody;
 	}
 	
 	public Coordinate newNext(Coordinate current,Direction directionSnake) { // lorsque le prochain mouvement change
@@ -208,6 +215,7 @@ public class Snake {
 	
 	
 	public void move() { // Fonction qui fait l'avancée du serpent et qui verifie s'il y a des obstacles
+		previousBody = new ArrayList<>(body); // On garde l'ancienne position pour l'animation
 		Coordinate current = body.get(body.size() - 1);
 		Coordinate next = new Coordinate(current.getX() + directionSnake.getX(), current.getY() + directionSnake.getY());
 		snakeWin(next);

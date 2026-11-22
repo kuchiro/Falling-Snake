@@ -31,6 +31,8 @@ public class Game {
 	static final int NBCELL = 30;
 	
 	static final int CELL_SIZE = FRAMESIZE/NBCELL;
+
+	static final int TICK_MS = 100; // Durée d'un tour de jeu en millisecondes
 	
 	public Game(){
 		rand = new Random();
@@ -96,13 +98,8 @@ public class Game {
 		} 
 	}
 		
-	public void move() {
+	public void move() { // Un "tick" du jeu, appelé toutes les TICK_MS millisecondes par la boucle de App
 		canon.move();
 		snake.move();
-		try {
-			Thread.sleep(100);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
 	}
 }

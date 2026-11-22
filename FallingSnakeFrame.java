@@ -2,22 +2,22 @@
 import javax.swing.JFrame;
 
 public class FallingSnakeFrame extends JFrame{
-	
+
 	/*
 	 *  La classe Frame du jeu
 	 */
-	
-	
+
+
 	private static final long serialVersionUID = 1L;
 
-	public FallingSnakeFrame(Game game, FallingSnakeView gameView){	
-		this.add(gameView); 
+	public FallingSnakeFrame(Game game, FallingSnakeView gameView){
+		this.add(gameView);
 		this.setTitle("Falling Snake");
-		this.setLocation(50, 50);
 		this.setResizable(false);
-		this.setVisible(true);
-		this.pack();
 		this.addKeyListener(game.getPlayer());
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.pack(); // On calcule la taille avant d'afficher la fenêtre
+		this.setLocationRelativeTo(null); // Fenêtre centrée sur l'écran
+		this.setVisible(true);
 	}
 }
