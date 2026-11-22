@@ -1,6 +1,4 @@
 
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.Timer;
@@ -36,16 +34,7 @@ public class FallingSnakeFrame extends JFrame{
 	public void startGame(Difficulty difficulty) { // Lance une partie avec la difficulté choisie
 		stopLoop();
 		Game game = new Game(difficulty);
-		FallingSnakeView gameView = new FallingSnakeView(game);
-		gameView.addKeyListener(game.getPlayer());
-		gameView.addKeyListener(new KeyAdapter() { // En fin de partie, Entrée ramène au menu
-			@Override
-			public void keyPressed(KeyEvent e) {
-				if(game.isGameEnd() && e.getKeyCode() == KeyEvent.VK_ENTER) {
-					showMenu();
-				}
-			}
-		});
+		FallingSnakeView gameView = new FallingSnakeView(game, () -> startGame(difficulty), this::showMenu);
 		setScreen(gameView);
 		startLoop(game, gameView);
 	}

@@ -8,9 +8,9 @@
 ***
 **Dans le menu :**
 ***
-# flèches haut / bas (ou la souris) pour choisir la difficulté
+# clic sur un niveau pour lancer la partie
 ***
-# Entrée, Espace ou clic pour lancer la partie
+# ou flèches haut / bas puis Entrée (ou Espace)
 ***
 
 | Niveau    | Plateau | Vitesse du serpent | Longueur (vies) |
@@ -35,7 +35,9 @@
 
 **En fin de partie :**
 ***
-# Entrée pour revenir au menu
+# clic sur « Rejouer » ou Entrée pour rejouer au même niveau
+***
+# clic sur « Menu » ou Échap pour revenir au menu
 ***
 
 **Les fruits :**

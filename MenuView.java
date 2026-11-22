@@ -1,5 +1,6 @@
 
 import java.awt.BasicStroke;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -60,12 +61,13 @@ public class MenuView extends JPanel {
 				if(i >= 0) {
 					select(i);
 				}
+				setCursor(Cursor.getPredefinedCursor(i >= 0 ? Cursor.HAND_CURSOR : Cursor.DEFAULT_CURSOR)); // Main au survol d'une carte
 			}
 
 			@Override
-			public void mouseClicked(MouseEvent e) {
+			public void mouseReleased(MouseEvent e) { // Released plutôt que Clicked : un clic reste valide même si la souris bouge un peu
 				int i = cardAt(e.getX(), e.getY());
-				if(i >= 0) {
+				if(i >= 0 && e.getButton() == MouseEvent.BUTTON1) {
 					onStart.accept(levels[i]);
 				}
 			}
@@ -108,7 +110,7 @@ public class MenuView extends JPanel {
 			drawCard(g, levels[i], cardY(i), i == selected);
 		}
 
-		FallingSnakeView.drawCentered(g, "↑ ↓ choisir  ·  Entrée lancer  ·  en jeu : ← → bouger, Espace tirer",
+		FallingSnakeView.drawCentered(g, "Clic ou ↑ ↓ + Entrée pour lancer  ·  en jeu : ← → bouger, Espace tirer",
 				new Font(Font.SANS_SERIF, Font.PLAIN, 13), Palette.TEXT_MUTED, Game.FRAMESIZE - 30);
 	}
 

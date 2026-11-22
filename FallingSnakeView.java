@@ -1,5 +1,7 @@
 
+import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -7,6 +9,10 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.RoundRectangle2D;
 import java.util.List;
@@ -19,6 +25,7 @@ public class FallingSnakeView extends JPanel {
 	 * Contient le jeu
 	 * 			les méthodes qui dessinent le jeu (les fruits se dessinent eux-mêmes)
 	 * 			l'animation entre deux ticks (interpolation des positions)
+	 * 			l'écran de fin avec les boutons "Rejouer" et "Menu" (clic, Entrée ou Échap)
 	 * 			un constructeur
 	 */
 
@@ -32,8 +39,26 @@ public class FallingSnakeView extends JPanel {
 	private double alpha; // Avancement entre le tick précédent (0) et le tick actuel (1)
 
 	private double canonX; // Position affichée du canon, qui glisse vers sa vraie position
-
-	public FallingSnakeView(Game game) {
+	
+	// Boutons de l'écran de fin
+	private static final int BUTTON_W = 170;
+	private static final int BUTTON_H = 48;
+	private static final int BUTTON_GAP = 20;
+	private static final int BUTTON_Y = Game.FRAMESIZE / 2 + 70;
+	private static final RoundRectangle2D REPLAY_BUTTON = new RoundRectangle2D.Double(
+			Game.FRAMESIZE / 2 - BUTTON_W - BUTTON_GAP / 2, BUTTON_Y, BUTTON_W, BUTTON_H, 16, 16);
+	private static final RoundRectangle2D MENU_BUTTON = new RoundRectangle2D.Double(
+			Game.FRAMESIZE / 2 + BUTTON_GAP / 2, BUTTON_Y, BUTTON_W, BUTTON_H, 16, 16);
+	
+	private boolean hoverReplay;
+	
+	private boolean hoverMenu;
+	
+	/*
+	 * onReplay : ce qu'on fait quand le joueur veut rejouer (même difficulté)
+	 * onMenu   : ce qu'on fait quand le joueur veut revenir au menu
+	 */
+	public FallingSnakeView(Game game, Runnable onReplay, Runnable onMenu) {
 		this.game = game;
 		this.cell = game.getCellSize();
 		this.canonX = game.getPlayer().getCoordPlayers().getX();
@@ -41,6 +66,44 @@ public class FallingSnakeView extends JPanel {
 		this.setPreferredSize(new Dimension(Game.FRAMESIZE, Game.FRAMESIZE));
 		this.setDoubleBuffered(true);
 		this.setFocusable(true);
+		
+		this.addKeyListener(game.getPlayer()); // Le canon se déplace et tire avec le clavier
+		this.addKeyListener(new KeyAdapter() { // En fin de partie : Entrée pour rejouer, Échap pour le menu
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if(!game.isGameEnd()) {
+					return;
+				}
+				if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+					onReplay.run();
+				} else if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+					onMenu.run();
+				}
+			}
+		});
+		
+		MouseAdapter mouse = new MouseAdapter() { // En fin de partie : clic sur un des deux boutons
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				hoverReplay = game.isGameEnd() && REPLAY_BUTTON.contains(e.getPoint());
+				hoverMenu = game.isGameEnd() && MENU_BUTTON.contains(e.getPoint());
+				setCursor(Cursor.getPredefinedCursor(hoverReplay || hoverMenu ? Cursor.HAND_CURSOR : Cursor.DEFAULT_CURSOR));
+			}
+			
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				if(!game.isGameEnd() || e.getButton() != MouseEvent.BUTTON1) {
+					return;
+				}
+				if(REPLAY_BUTTON.contains(e.getPoint())) {
+					onReplay.run();
+				} else if(MENU_BUTTON.contains(e.getPoint())) {
+					onMenu.run();
+				}
+			}
+		};
+		this.addMouseListener(mouse);
+		this.addMouseMotionListener(mouse);
 	}
 
 	public void nextFrame(double alpha, double dtSeconds) { // Appelée par la boucle de jeu à chaque image
@@ -80,7 +143,30 @@ public class FallingSnakeView extends JPanel {
 		String subtitle = playerWon ? "Le serpent a été détruit" : "Le serpent a atteint le bas";
 		drawCentered(g, title, new Font(Font.SANS_SERIF, Font.BOLD, 48), playerWon ? Palette.WIN : Palette.LOSE, Game.FRAMESIZE / 2 - 10);
 		drawCentered(g, subtitle, new Font(Font.SANS_SERIF, Font.PLAIN, 18), Palette.TEXT, Game.FRAMESIZE / 2 + 30);
-		drawCentered(g, "Entrée : revenir au menu", new Font(Font.SANS_SERIF, Font.PLAIN, 14), Palette.TEXT_MUTED, Game.FRAMESIZE / 2 + 80);
+		drawButton(g, REPLAY_BUTTON, "Rejouer", hoverReplay, true);
+		drawButton(g, MENU_BUTTON, "Menu", hoverMenu, false);
+		drawCentered(g, "Entrée : rejouer  ·  Échap : menu", new Font(Font.SANS_SERIF, Font.PLAIN, 14), Palette.TEXT_MUTED, BUTTON_Y + BUTTON_H + 40);
+	}
+	
+	private void drawButton(Graphics2D g, RoundRectangle2D button, String label, boolean hover, boolean primary) {
+		Color accent = game.getDifficulty().getColor();
+		if(primary) { // Bouton principal : rempli avec la couleur du niveau
+			g.setColor(hover ? Palette.mix(accent, Color.WHITE, 0.2) : accent);
+			g.fill(button);
+			g.setColor(Palette.BACKGROUND);
+		} else { // Bouton secondaire : juste un contour
+			g.setColor(hover ? Palette.CARD_SELECTED : Palette.CARD);
+			g.fill(button);
+			g.setColor(hover ? accent : Palette.TEXT_MUTED);
+			g.setStroke(new BasicStroke(2f));
+			g.draw(button);
+			g.setColor(Palette.TEXT);
+		}
+		g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 18));
+		FontMetrics fm = g.getFontMetrics();
+		int textX = (int) (button.getX() + (button.getWidth() - fm.stringWidth(label)) / 2);
+		int textY = (int) (button.getY() + (button.getHeight() + fm.getAscent() - fm.getDescent()) / 2);
+		g.drawString(label, textX, textY);
 	}
 
 	protected static void drawCentered(Graphics2D g, String text, Font font, Color color, int baseline) {
