@@ -80,6 +80,7 @@ public class FallingSnakeView extends JPanel {
 		String subtitle = playerWon ? "Le serpent a été détruit" : "Le serpent a atteint le bas";
 		drawCentered(g, title, new Font(Font.SANS_SERIF, Font.BOLD, 48), playerWon ? Palette.WIN : Palette.LOSE, Game.FRAMESIZE / 2 - 10);
 		drawCentered(g, subtitle, new Font(Font.SANS_SERIF, Font.PLAIN, 18), Palette.TEXT, Game.FRAMESIZE / 2 + 30);
+		drawCentered(g, "Entrée : revenir au menu", new Font(Font.SANS_SERIF, Font.PLAIN, 14), Palette.TEXT_MUTED, Game.FRAMESIZE / 2 + 80);
 	}
 
 	protected static void drawCentered(Graphics2D g, String text, Font font, Color color, int baseline) {

@@ -9,11 +9,20 @@ public class Game {
 	 * Contient le joueur
 	 * 			le serpent
 	 * 			les fruits
+	 * 			la difficulté choisie (taille du plateau, vitesse, longueur du serpent)
 	 * 	 		si le jeu est finit
 	 * 			les méthodes qui les initialisent
 	 * 			les avancées du jeu
 	 * 			les getters/ setters
 	 */
+
+	static final int FRAMESIZE = 600; // Taille de la fenêtre en pixels, la même pour tous les niveaux
+
+	private final Difficulty difficulty;
+
+	private final int nbCell; // Nombre de cases sur une ligne (dépend de la difficulté)
+
+	private final Random rand;
 
 	private Canon canon;
 
@@ -23,20 +32,12 @@ public class Game {
 
 	private boolean gameEnd;
 
-	private Random rand;
-
-	static final int FRAMESIZE = 600;
-
-	static final int NBCELL = 30;
-
-	static final int CELL_SIZE = FRAMESIZE/NBCELL;
-
-	static final int TICK_MS = 100; // Durée d'un tour de jeu en millisecondes
-
-	public Game(){
-		rand = new Random();
-		snake = new Snake(this, new Coordinate(0,0), 3);
-		canon = new Canon(this, new Coordinate(NBCELL/2, NBCELL - 1));
+	public Game(Difficulty difficulty){
+		this.difficulty = difficulty;
+		this.nbCell = difficulty.getNbCell();
+		this.rand = new Random();
+		snake = new Snake(this, new Coordinate(0,0), difficulty.getSnakeLength());
+		canon = new Canon(this, new Coordinate(nbCell/2, nbCell - 1));
 		spawnFruits();
 		gameEnd = false;
 	}
@@ -61,12 +62,20 @@ public class Game {
 		return fruits;
 	}
 
-	public int getNbCell() {
-		return NBCELL;
+	public Difficulty getDifficulty() {
+		return difficulty;
 	}
 
-	public int getCellSize() {
-		return CELL_SIZE;
+	public int getNbCell() {
+		return nbCell;
+	}
+
+	public int getCellSize() { // Taille d'une case en pixels
+		return FRAMESIZE / nbCell;
+	}
+
+	public int getTickMs() { // Durée d'un tour de jeu en millisecondes
+		return difficulty.getTickMs();
 	}
 
 	public Fruit fruitAt(Coordinate coord) { // Le fruit qui est sur cette case, ou null s'il n'y en a pas
@@ -80,10 +89,10 @@ public class Game {
 
 	public void spawnFruits() { // On (re)crée tous les fruits à des positions aléatoires
 		fruits = new ArrayList<>();
-		for(int i = 0; i < NBCELL; i++) {
+		for(int i = 0; i < nbCell; i++) {
 			Coordinate coord;
 			do { // On évite la ligne du joueur, le serpent et les cases déjà prises
-				coord = new Coordinate(rand.nextInt(NBCELL), rand.nextInt(NBCELL - 1));
+				coord = new Coordinate(rand.nextInt(nbCell), rand.nextInt(nbCell - 1));
 			} while(snake.getSnakeBody().contains(coord) || fruitAt(coord) != null);
 			fruits.add(randomFruit(coord));
 		}
@@ -98,7 +107,7 @@ public class Game {
 		}
 	}
 
-	public void move() { // Un "tick" du jeu, appelé toutes les TICK_MS millisecondes par la boucle de App
+	public void move() { // Un "tick" du jeu, appelé toutes les getTickMs() millisecondes par la boucle de jeu
 		canon.move();
 		snake.move();
 	}
