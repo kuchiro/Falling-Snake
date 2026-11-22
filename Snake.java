@@ -94,11 +94,28 @@ public class Snake {
 		return fruit.applyEffect(this, current, next); // Polymorphisme : chaque fruit sait ce qu'il fait
 	}
 
-	public boolean hitBy(Coordinate shot) { // Une balle arrive sur la case shot : retourne true si elle touche le serpent
+	/*
+	 * Une balle vient d'arriver sur la case shotNow (elle était sur shotBefore au début du tour,
+	 * ou shotBefore = null si on ne regarde que sa case actuelle)
+	 * Retourne true si elle touche le serpent. Elle le touche si :
+	 * 		- elle est sur une case du corps,
+	 * 		- ou elle a croisé la tête pendant le tour : elle est entrée dans la case que la tête
+	 * 		  vient de quitter, ou la tête est entrée dans la case que la balle vient de quitter
+	 * Sans ce deuxième cas, un serpent réduit à sa tête esquivait la plupart des tirs,
+	 * alors qu'à l'écran on voyait la balle passer dessus
+	 */
+	public boolean hitByShot(Coordinate shotBefore, Coordinate shotNow) {
 		if(isInvincible()) {
 			return false;
 		}
-		int index = body.indexOf(shot);
+		int index = body.indexOf(shotNow);
+		if(index < 0 && shotBefore != null) {
+			Coordinate head = body.get(body.size() - 1);
+			Coordinate oldHead = previousBody.get(previousBody.size() - 1);
+			if(shotNow.equals(oldHead) || shotBefore.equals(head)) {
+				index = body.size() - 1;
+			}
+		}
 		if(index < 0) {
 			return false;
 		}
@@ -110,7 +127,7 @@ public class Snake {
 		}
 		return true;
 	}
-
+	
 	public void move() { // Fonction qui fait l'avancée du serpent et qui verifie s'il y a des fruits
 		previousBody = new ArrayList<>(body); // On garde l'ancienne position pour l'animation
 		Coordinate current = body.get(body.size() - 1);

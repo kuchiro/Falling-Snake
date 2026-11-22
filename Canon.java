@@ -13,6 +13,7 @@ public class Canon implements KeyListener{
 	 * 			le déplacement du joueur avec les touches flèches vers la droite ou vers la gauche
 	 * 			le fait de tirer avec les touches espaces ou flèches vers le haut
 	 * 			la liste de toutes les balles tire qui sont encore sur l'interface
+	 * 			le déplacement des balles et leurs collisions
 	 * 			un constructeur
 	 * 			des getter/ setter
 	 *
@@ -53,26 +54,36 @@ public class Canon implements KeyListener{
 		return shots;
 	}
 
-	public void move() { // Fonction qui verifie si chaque balle touche une des entités ou sort de l'interface
-		// On parcourt la liste à l'envers : retirer la balle i ne décale pas celles qu'il reste à traiter
+	public void moveBullets() { // Chaque balle monte d'une case, et disparaît quand elle sort de l'interface
 		for(int i = shots.size() - 1; i >= 0; i--) {
 			Bullet bullet = shots.get(i);
-			Coordinate coord = bullet.getCoordBullet();
-			if(game.getSnake().hitBy(coord)) { // Si la balle touche le serpent (et qu'il n'est pas invincible)
+			bullet.setCoordBullet(bullet.getCoordBullet().translate(bullet.getDirectionBullet()));
+			if(bullet.getCoordBullet().getY() < 0) {
+				shots.remove(i);
+			}
+		}
+	}
+
+	/*
+	 * Vérifie si chaque balle touche le serpent ou un fruit
+	 * afterMove = false : on regarde seulement la case actuelle de la balle
+	 * afterMove = true  : les balles et le serpent viennent de bouger, on compte aussi
+	 *                     les cas où ils se sont croisés pendant le tour (voir Snake.hitByShot)
+	 */
+	public void checkHits(boolean afterMove) {
+		// On parcourt la liste à l'envers : retirer la balle i ne décale pas celles qu'il reste à traiter
+		for(int i = shots.size() - 1; i >= 0 && !game.isGameEnd(); i--) {
+			Bullet bullet = shots.get(i);
+			Coordinate before = afterMove ? bullet.getPreviousCoordBullet() : null;
+			if(game.getSnake().hitByShot(before, bullet.getCoordBullet())) { // Si la balle touche le serpent (et qu'il n'est pas invincible)
 				shots.remove(i);
 				continue;
 			}
-			Fruit fruit = game.fruitAt(coord);
+			Fruit fruit = game.fruitAt(bullet.getCoordBullet());
 			if(fruit != null) { // Si la balle touche un fruit, les deux disparaissent
 				shots.remove(i);
 				game.getFruits().remove(fruit);
-				continue;
 			}
-			if(coord.getY() == -1) { // Si la balle est en dehors de l'interface alors on l'enlève
-				shots.remove(i);
-				continue;
-			}
-			bullet.setCoordBullet(coord.translate(bullet.getDirectionBullet())); // Sinon la balle avance
 		}
 	}
 

@@ -108,7 +108,9 @@ public class Game {
 	}
 
 	public void move() { // Un "tick" du jeu, appelé toutes les getTickMs() millisecondes par la boucle de jeu
-		canon.move();
+		canon.checkHits(false); // Une balle qui vient d'être tirée peut déjà être sur le serpent ou un fruit
+		canon.moveBullets();
 		snake.move();
+		canon.checkHits(true);  // Les balles et le serpent ont bougé : on vérifie s'ils se sont rencontrés
 	}
 }
