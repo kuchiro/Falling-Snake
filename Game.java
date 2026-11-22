@@ -3,45 +3,44 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class Game {
-	
+
 	/*
-	 * La classe du jeu 
+	 * La classe du jeu
 	 * Contient le joueur
 	 * 			le serpent
-	 * 			les obstacles
-	 * 	 		si le jeu est finit 
-	 * 			les méthodes qui les initialisent 
+	 * 			les fruits
+	 * 	 		si le jeu est finit
+	 * 			les méthodes qui les initialisent
 	 * 			les avancées du jeu
 	 * 			les getters/ setters
 	 */
-	
+
 	private Canon canon;
-	
+
 	private Snake snake;
-	
-	private ArrayList<Obstacle> obstacles;
-	
+
+	private ArrayList<Fruit> fruits;
+
 	private boolean gameEnd;
-	
-	@SuppressWarnings("unused")
+
 	private Random rand;
-	
+
 	static final int FRAMESIZE = 600;
-	
+
 	static final int NBCELL = 30;
-	
+
 	static final int CELL_SIZE = FRAMESIZE/NBCELL;
 
 	static final int TICK_MS = 100; // Durée d'un tour de jeu en millisecondes
-	
+
 	public Game(){
 		rand = new Random();
-		initializeSnake();
-		initializePlayer();
-		initializeObstacle();
+		snake = new Snake(this, new Coordinate(0,0), 3);
+		canon = new Canon(this, new Coordinate(NBCELL/2, NBCELL - 1));
+		spawnFruits();
 		gameEnd = false;
 	}
-	
+
 	public boolean isGameEnd() {
 		return gameEnd;
 	}
@@ -58,46 +57,47 @@ public class Game {
 		return snake;
 	}
 
-	public ArrayList<Obstacle> getObstacles() {
-		return obstacles;
-	}
-	
-	public void initializeSnake() { // On crée le serpent
-		snake = new Snake(this, new Coordinate(0,0));
+	public ArrayList<Fruit> getFruits() {
+		return fruits;
 	}
 
-	public void initializePlayer(){ // On crée le joueur
-		canon = new Canon(this, new Coordinate(NBCELL/2, NBCELL - 1));
+	public int getNbCell() {
+		return NBCELL;
 	}
-	
-	public void initializeObstacle() { // On crée les obstacles
-		obstacles = new ArrayList<>();
-		for(int i = 0; i < NBCELL; i++) {
-			int randChooseObstacle = rand.nextInt(4); // On choisit aléatoirement entre 0 et 3 entre les 4 obstacles 
-			int randPosX = rand.nextInt(NBCELL - 1); // On choisit aléatoire entre 0 et le nombre de case pour la position X
-			int randPosY = rand.nextInt(NBCELL - 1); // On choisit aléatoire entre 0 et le nombre de case - 1 pour la position Y
-			for(int j = 0; j < snake.getSnakeBody().size();j++) {
-				while(randPosX == snake.getSnakeBody().get(j).getX() && randPosY == snake.getSnakeBody().get(j).getY()) { // On ne veut pas d'un obstacle qui est sur le serpent directement
-					randPosX = rand.nextInt(NBCELL - 1);
-					randPosY = rand.nextInt(NBCELL - 1);
-				}
+
+	public int getCellSize() {
+		return CELL_SIZE;
+	}
+
+	public Fruit fruitAt(Coordinate coord) { // Le fruit qui est sur cette case, ou null s'il n'y en a pas
+		for(Fruit fruit : fruits) {
+			if(fruit.getCoordFruit().equals(coord)) {
+				return fruit;
 			}
-			initializeObstacleAux(randChooseObstacle,randPosX,randPosY);
+		}
+		return null;
+	}
+
+	public void spawnFruits() { // On (re)crée tous les fruits à des positions aléatoires
+		fruits = new ArrayList<>();
+		for(int i = 0; i < NBCELL; i++) {
+			Coordinate coord;
+			do { // On évite la ligne du joueur, le serpent et les cases déjà prises
+				coord = new Coordinate(rand.nextInt(NBCELL), rand.nextInt(NBCELL - 1));
+			} while(snake.getSnakeBody().contains(coord) || fruitAt(coord) != null);
+			fruits.add(randomFruit(coord));
 		}
 	}
-	
-	public void initializeObstacleAux(int randChooseObstacle, int randPosX, int randPosY) {
-		if(randChooseObstacle == 0) { // Si c'est 0 alors on ajoute un obstacle de bois 
-			obstacles.add(new Obstacle(1,(new Coordinate(randPosX,randPosY))));
-		} else if(randChooseObstacle == 1) { // Si c'est 1 alors on ajoute un obstacle de fraise
-			obstacles.add(new Obstacle(2,(new Coordinate(randPosX,randPosY)))); 
-		} else if(randChooseObstacle == 2) { // Si c'est 2 alors on ajoute un obstacle de myrtille
-			obstacles.add(new Obstacle(3,(new Coordinate(randPosX,randPosY)))); 
-		} else if(randChooseObstacle == 3) { // Si c'est 3 alors on ajoute un obstacle piece d'or
-			obstacles.add(new Obstacle(4,(new Coordinate(randPosX,randPosY)))); 
-		} 
+
+	private Fruit randomFruit(Coordinate coord) { // On choisit aléatoirement un des 4 fruits
+		switch(rand.nextInt(4)) {
+			case 0:  return new Bois(coord);
+			case 1:  return new Fraise(coord);
+			case 2:  return new Myrtille(coord);
+			default: return new PieceOr(this, coord);
+		}
 	}
-		
+
 	public void move() { // Un "tick" du jeu, appelé toutes les TICK_MS millisecondes par la boucle de App
 		canon.move();
 		snake.move();
