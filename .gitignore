@@ -1,0 +1,32 @@
+# Fichiers Java compilés
+*.class
+
+# Archives et paquets
+*.jar
+*.war
+*.ear
+
+# Logs et crash dumps de la JVM
+*.log
+hs_err_pid*
+replay_pid*
+
+# Dossiers de build (javac -d, Maven, Gradle)
+bin/
+out/
+build/
+target/
+.gradle/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+nbproject/
+
+# Système (macOS / Windows)
+.DS_Store
+Thumbs.db
