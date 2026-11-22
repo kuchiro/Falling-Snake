@@ -99,9 +99,9 @@ public class Snake {
 	 * ou shotBefore = null si on ne regarde que sa case actuelle)
 	 * Retourne true si elle touche le serpent. Elle le touche si :
 	 * 		- elle est sur une case du corps,
-	 * 		- ou elle a croisé la tête pendant le tour : elle est entrée dans la case que la tête
-	 * 		  vient de quitter, ou la tête est entrée dans la case que la balle vient de quitter
-	 * Sans ce deuxième cas, un serpent réduit à sa tête esquivait la plupart des tirs,
+	 * 		- ou elle a croisé un morceau pendant le tour : elle est entrée dans la case que ce morceau
+	 * 		  vient de quitter, ou le morceau est entré dans la case que la balle vient de quitter
+	 * Sans ce deuxième cas, la tête et la queue esquivaient une partie des tirs,
 	 * alors qu'à l'écran on voyait la balle passer dessus
 	 */
 	public boolean hitByShot(Coordinate shotBefore, Coordinate shotNow) {
@@ -110,10 +110,14 @@ public class Snake {
 		}
 		int index = body.indexOf(shotNow);
 		if(index < 0 && shotBefore != null) {
-			Coordinate head = body.get(body.size() - 1);
-			Coordinate oldHead = previousBody.get(previousBody.size() - 1);
-			if(shotNow.equals(oldHead) || shotBefore.equals(head)) {
-				index = body.size() - 1;
+			// On associe chaque morceau à sa position du tour précédent, en partant de la tête
+			int n = body.size();
+			int m = previousBody.size();
+			for(int k = 1; k <= Math.min(n, m); k++) {
+				if(shotNow.equals(previousBody.get(m - k)) || shotBefore.equals(body.get(n - k))) {
+					index = n - k;
+					break;
+				}
 			}
 		}
 		if(index < 0) {
