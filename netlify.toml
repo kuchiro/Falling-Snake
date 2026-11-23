@@ -1,0 +1,4 @@
+# Configuration Netlify : le site publié est le dossier web/
+# (index.html + FallingSnake.jar, fabriqué avec ./build.sh)
+[build]
+  publish = "web"

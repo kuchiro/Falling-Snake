@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Falling Snake</title>
+  <meta name="description" content="Falling Snake, un jeu en Java (Swing) jouable dans le navigateur : détruis le serpent avant qu'il n'atteigne ton canon.">
+  <style>
+    :root {
+      --bg: #1b1f2e;
+      --card: #252a3e;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --green: #4ade80;
+      --coral: #ff8a65;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.5;
+    }
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 32px 16px 48px;
+    }
+    h1 {
+      margin: 0 0 4px;
+      font-size: 2.4rem;
+      color: var(--green);
+    }
+    .lead { margin: 0 0 24px; color: var(--muted); }
+    #game {
+      width: 600px;
+      height: 640px;
+      max-width: 100%;
+      margin: 0 auto;
+      border-radius: 14px;
+      overflow: hidden;
+      background: var(--card);
+    }
+    .hint {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin: 12px 0 28px;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 32px;
+    }
+    .btn {
+      display: inline-block;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-weight: 600;
+      text-decoration: none;
+      border: 2px solid var(--muted);
+      color: var(--text);
+    }
+    .btn.primary { background: var(--green); border-color: var(--green); color: var(--bg); }
+    .btn:hover { filter: brightness(1.1); }
+    h2 { font-size: 1.2rem; margin: 28px 0 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+    td, th { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--card); }
+    th { color: var(--muted); font-weight: 600; }
+    kbd {
+      background: var(--card);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: inherit;
+    }
+    footer { color: var(--muted); font-size: 0.85rem; margin-top: 32px; text-align: center; }
+    a { color: var(--coral); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Falling Snake</h1>
+    <p class="lead">Un dérivé de Snake en Java : tu joues le canon, et le serpent descend vers toi. Détruis-le avant qu'il n'atteigne ta ligne.</p>
+
+    <div id="game"></div>
+    <p class="hint">Le premier chargement prend quelques secondes. Clique sur le jeu pour que le clavier fonctionne.</p>
+
+    <div class="actions">
+      <a class="btn primary" href="FallingSnake.jar" download>Télécharger le jeu (.jar)</a>
+      <a class="btn" href="https://github.com/kuchiro/Falling-Snake">Code source sur GitHub</a>
+    </div>
+
+    <h2>Les touches</h2>
+    <table>
+      <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Déplacer le canon</td></tr>
+      <tr><td><kbd>Espace</kbd> ou <kbd>↑</kbd></td><td>Tirer</td></tr>
+      <tr><td><kbd>P</kbd> ou <kbd>Échap</kbd></td><td>Pause</td></tr>
+    </table>
+
+    <h2>Les fruits</h2>
+    <table>
+      <tr><th>Fruit</th><th>Effet sur le serpent</th></tr>
+      <tr><td>Bois</td><td>Obstacle : il descend d'une ligne et repart dans l'autre sens</td></tr>
+      <tr><td>Fraise</td><td>Il grandit d'un morceau (une vie de plus)</td></tr>
+      <tr><td>Myrtille</td><td>Il devient invincible pendant 5 secondes</td></tr>
+      <tr><td>Pièce d'or</td><td>Tous les fruits du plateau sont remplacés</td></tr>
+    </table>
+
+    <h2>Jouer sur ton ordinateur</h2>
+    <p>Télécharge <code>FallingSnake.jar</code>, puis lance-le avec <code>java -jar FallingSnake.jar</code> (Java 8 ou plus récent est nécessaire).</p>
+
+    <footer>Fait en Java (Swing). Version web propulsée par <a href="https://cheerpj.com">CheerpJ</a>.</footer>
+  </main>
+
+  <script src="https://cjrtnc.leaningtech.com/5.0/loader.js"></script>
+  <script type="module">
+    // CheerpJ fait tourner la machine virtuelle Java dans le navigateur.
+    // "/app/" correspond à la racine du site : le jar est à côté de cette page.
+    await cheerpjInit({ version: 8 });
+    cheerpjCreateDisplay(-1, -1, document.getElementById("game"));
+    await cheerpjRunJar("/app/FallingSnake.jar");
+  </script>
+</body>
+</html>

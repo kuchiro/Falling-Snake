@@ -22,6 +22,26 @@ java App
 
 *La fenêtre s'ouvre sur le menu de choix de la difficulté.*
 
+## Jouer sans compiler
+
+*Tu peux aussi télécharger `FallingSnake.jar` depuis la page Releases du dépôt GitHub, puis le lancer avec `java -jar FallingSnake.jar` (Java 8 ou plus récent).*
+
+## Fabriquer le jar et la version web
+
+*Le script `build.sh` fabrique `FallingSnake.jar` (dans `build/`) et le copie dans `web/` :*
+
+```bash
+./build.sh
+```
+
+*Le dossier `web/` contient une page qui fait tourner le jeu directement dans le navigateur grâce à [CheerpJ](https://cheerpj.com). Il est prêt à être publié sur Netlify (le fichier `netlify.toml` indique de publier ce dossier). Pour la tester sur ton ordinateur, il faut un serveur qui gère les requêtes « Range », par exemple :*
+
+```bash
+npx http-server web -p 8080
+```
+
+*Puis ouvre http://localhost:8080. Ouvrir directement `index.html` en double-cliquant ne marche pas.*
+
 ## Les touches
 
 ### Dans le menu

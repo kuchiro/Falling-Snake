@@ -5,6 +5,8 @@
 *.jar
 *.war
 *.ear
+# ... sauf le jar de la version web, publié sur Netlify
+!web/FallingSnake.jar
 
 # Logs et crash dumps de la JVM
 *.log
