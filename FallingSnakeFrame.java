@@ -64,7 +64,7 @@ public class FallingSnakeFrame extends JFrame{
 				double dtMs = Math.min((now - last) / 1_000_000.0, 250); // on évite un énorme saut après une pause
 				last = now;
 
-				if (!game.isGameEnd()) {
+				if (!game.isGameEnd() && !game.isPaused()) { // En pause, la partie est figée
 					accumulatedMs += dtMs;
 					while (accumulatedMs >= game.getTickMs() && !game.isGameEnd()) { // on fait avancer la logique du jeu
 						game.move();

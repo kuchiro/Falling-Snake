@@ -92,7 +92,7 @@ public class Canon implements KeyListener{
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-		if(game.isGameEnd()) {
+		if(game.isGameEnd() || game.isPaused()) { // Le canon ne bouge pas et ne tire pas en pause
 			return;
 		}
 		if(e.getKeyCode() == KeyEvent.VK_RIGHT) { // On vérifie qu'il n'est pas à l'extrémité droite s'il ne l'est pas alors on le déplace à droite

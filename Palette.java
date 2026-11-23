@@ -25,6 +25,7 @@ public final class Palette {
 	static final Color CANON_DARK       = new Color(0xE0, 0x62, 0x44);
 	static final Color BULLET           = new Color(0xFF, 0xE0, 0x82);
 	static final Color OVERLAY          = new Color(0x1B, 0x1F, 0x2E, 215);
+	static final Color PAUSE_BUTTON     = new Color(0x25, 0x2A, 0x3E, 200); // semi-transparent pour laisser voir le plateau
 	static final Color WIN              = new Color(0x4A, 0xDE, 0x80);
 	static final Color LOSE             = new Color(0xFF, 0x5C, 0x7A);
 

@@ -33,6 +33,13 @@
 # flèche vers la gauche pour aller à gauche
 ***
 
+**Pause :**
+***
+# clic sur le bouton pause en haut à droite, ou P / Échap
+***
+# puis « Reprendre » (ou P / Échap / Entrée) ou « Menu »
+***
+
 **En fin de partie :**
 ***
 # clic sur « Rejouer » ou Entrée pour rejouer au même niveau

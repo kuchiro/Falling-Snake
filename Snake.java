@@ -10,7 +10,7 @@ public class Snake {
 	 * 			le jeu
 	 * 			la direction du serpent
 	 * 			le fait de savoir si le serpent est en vie
-	 * 			jusqu'à quand le serpent est invincible
+	 * 			combien de tours le serpent est encore invincible
 	 * 			les actions que les fruits peuvent déclencher (grow, makeInvincible, turnDown)
 	 * 			des getters/ setters
 	 */
@@ -25,11 +25,11 @@ public class Snake {
 
 	private boolean aliveSnake;
 
-	private long invincibleUntil; // Heure (en ms) jusqu'à laquelle le serpent est invincible
+	private int invincibleTicks; // Nombre de tours d'invincibilité restants (compté en tours pour s'arrêter pendant la pause)
 
 	public Snake(Game game, Coordinate start, int length) {
 		aliveSnake = true;
-		invincibleUntil = 0;
+		invincibleTicks = 0;
 		this.game = game;
 		directionSnake = Direction.Right;
 		body = new ArrayList<>();
@@ -48,7 +48,7 @@ public class Snake {
 	}
 
 	public boolean isInvincible() {
-		return System.currentTimeMillis() < invincibleUntil;
+		return invincibleTicks > 0;
 	}
 
 	public ArrayList<Coordinate> getSnakeBody() {
@@ -70,7 +70,7 @@ public class Snake {
 	}
 
 	public void makeInvincible(long durationMs) { // Myrtille : invincible pendant durationMs millisecondes
-		invincibleUntil = System.currentTimeMillis() + durationMs;
+		invincibleTicks = (int) Math.ceil((double) durationMs / game.getTickMs());
 	}
 
 	public Coordinate turnDown(Coordinate current) { // Bord du plateau ou bois : on descend d'une ligne et on repart dans l'autre sens
@@ -134,6 +134,9 @@ public class Snake {
 	
 	public void move() { // Fonction qui fait l'avancée du serpent et qui verifie s'il y a des fruits
 		previousBody = new ArrayList<>(body); // On garde l'ancienne position pour l'animation
+		if(invincibleTicks > 0) { // L'invincibilité s'écoule d'un tour
+			invincibleTicks--;
+		}
 		Coordinate current = body.get(body.size() - 1);
 		Coordinate next = current.translate(directionSnake);
 		if(next.getX() < 0 || next.getX() >= game.getNbCell()) { // Le serpent arrive au bord : il descend

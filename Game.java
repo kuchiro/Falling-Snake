@@ -31,6 +31,8 @@ public class Game {
 	private ArrayList<Fruit> fruits;
 
 	private boolean gameEnd;
+	
+	private boolean paused; // Pendant la pause, la boucle de jeu ne fait plus avancer la partie
 
 	public Game(Difficulty difficulty){
 		this.difficulty = difficulty;
@@ -48,6 +50,14 @@ public class Game {
 
 	public void setGameEnd(boolean gameEnd) {
 		this.gameEnd = gameEnd;
+	}
+	
+	public boolean isPaused() {
+		return paused;
+	}
+	
+	public void setPaused(boolean paused) {
+		this.paused = paused && !gameEnd; // On ne met pas en pause une partie terminée
 	}
 
 	public Canon getPlayer() {

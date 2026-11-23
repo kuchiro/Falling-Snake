@@ -26,6 +26,7 @@ public class FallingSnakeView extends JPanel {
 	 * 			les méthodes qui dessinent le jeu (les fruits se dessinent eux-mêmes)
 	 * 			l'animation entre deux ticks (interpolation des positions)
 	 * 			l'écran de fin avec les boutons "Rejouer" et "Menu" (clic, Entrée ou Échap)
+	 * 			le bouton pause et l'écran de pause avec "Reprendre" et "Menu" (clic, P ou Échap)
 	 * 			un constructeur
 	 */
 
@@ -40,7 +41,8 @@ public class FallingSnakeView extends JPanel {
 
 	private double canonX; // Position affichée du canon, qui glisse vers sa vraie position
 	
-	// Boutons de l'écran de fin
+	// Boutons des écrans de fin et de pause
+	// (le bouton de gauche est "Rejouer" en fin de partie et "Reprendre" en pause)
 	private static final int BUTTON_W = 170;
 	private static final int BUTTON_H = 48;
 	private static final int BUTTON_GAP = 20;
@@ -49,6 +51,13 @@ public class FallingSnakeView extends JPanel {
 			Game.FRAMESIZE / 2 - BUTTON_W - BUTTON_GAP / 2, BUTTON_Y, BUTTON_W, BUTTON_H, 16, 16);
 	private static final RoundRectangle2D MENU_BUTTON = new RoundRectangle2D.Double(
 			Game.FRAMESIZE / 2 + BUTTON_GAP / 2, BUTTON_Y, BUTTON_W, BUTTON_H, 16, 16);
+
+	// Bouton pause, en haut à droite pendant la partie
+	private static final int PAUSE_SIZE = 36;
+	private static final RoundRectangle2D PAUSE_BUTTON = new RoundRectangle2D.Double(
+			Game.FRAMESIZE - PAUSE_SIZE - 10, 10, PAUSE_SIZE, PAUSE_SIZE, 12, 12);
+
+	private boolean hoverPause;
 	
 	private boolean hoverReplay;
 	
@@ -68,38 +77,55 @@ public class FallingSnakeView extends JPanel {
 		this.setFocusable(true);
 		
 		this.addKeyListener(game.getPlayer()); // Le canon se déplace et tire avec le clavier
-		this.addKeyListener(new KeyAdapter() { // En fin de partie : Entrée pour rejouer, Échap pour le menu
+		this.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if(!game.isGameEnd()) {
-					return;
-				}
-				if(e.getKeyCode() == KeyEvent.VK_ENTER) {
-					onReplay.run();
-				} else if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-					onMenu.run();
+				int key = e.getKeyCode();
+				if(game.isGameEnd()) { // En fin de partie : Entrée pour rejouer, Échap pour le menu
+					if(key == KeyEvent.VK_ENTER) {
+						onReplay.run();
+					} else if(key == KeyEvent.VK_ESCAPE) {
+						onMenu.run();
+					}
+				} else if(game.isPaused()) { // En pause : P, Échap ou Entrée pour reprendre
+					if(key == KeyEvent.VK_P || key == KeyEvent.VK_ESCAPE || key == KeyEvent.VK_ENTER) {
+						game.setPaused(false);
+					}
+				} else if(key == KeyEvent.VK_P || key == KeyEvent.VK_ESCAPE) { // En jeu : P ou Échap pour mettre en pause
+					game.setPaused(true);
 				}
 			}
 		});
 		
-		MouseAdapter mouse = new MouseAdapter() { // En fin de partie : clic sur un des deux boutons
+		MouseAdapter mouse = new MouseAdapter() { // Clic sur le bouton pause, ou sur les boutons des écrans de pause / fin
 			@Override
 			public void mouseMoved(MouseEvent e) {
-				hoverReplay = game.isGameEnd() && REPLAY_BUTTON.contains(e.getPoint());
-				hoverMenu = game.isGameEnd() && MENU_BUTTON.contains(e.getPoint());
-				setCursor(Cursor.getPredefinedCursor(hoverReplay || hoverMenu ? Cursor.HAND_CURSOR : Cursor.DEFAULT_CURSOR));
+				boolean overlay = game.isGameEnd() || game.isPaused(); // Un écran (fin ou pause) est affiché
+				hoverReplay = overlay && REPLAY_BUTTON.contains(e.getPoint());
+				hoverMenu = overlay && MENU_BUTTON.contains(e.getPoint());
+				hoverPause = !overlay && PAUSE_BUTTON.contains(e.getPoint());
+				setCursor(Cursor.getPredefinedCursor(hoverReplay || hoverMenu || hoverPause ? Cursor.HAND_CURSOR : Cursor.DEFAULT_CURSOR));
 			}
 			
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				if(!game.isGameEnd() || e.getButton() != MouseEvent.BUTTON1) {
+				if(e.getButton() != MouseEvent.BUTTON1) {
 					return;
 				}
-				if(REPLAY_BUTTON.contains(e.getPoint())) {
-					onReplay.run();
-				} else if(MENU_BUTTON.contains(e.getPoint())) {
-					onMenu.run();
+				if(game.isGameEnd() || game.isPaused()) {
+					if(REPLAY_BUTTON.contains(e.getPoint())) {
+						if(game.isGameEnd()) {
+							onReplay.run();
+						} else {
+							game.setPaused(false); // "Reprendre"
+						}
+					} else if(MENU_BUTTON.contains(e.getPoint())) {
+						onMenu.run();
+					}
+				} else if(PAUSE_BUTTON.contains(e.getPoint())) {
+					game.setPaused(true);
 				}
+				mouseMoved(e); // Met à jour le survol et le curseur pour le nouvel écran
 			}
 		};
 		this.addMouseListener(mouse);
@@ -131,6 +157,10 @@ public class FallingSnakeView extends JPanel {
 		drawPlayer(g);
 		if(game.isGameEnd()) {
 			drawGameOver(g);
+		} else if(game.isPaused()) {
+			drawPause(g);
+		} else {
+			drawPauseButton(g);
 		}
 		Toolkit.getDefaultToolkit().sync(); // Évite les saccades sur macOS / Linux
 	}
@@ -148,6 +178,28 @@ public class FallingSnakeView extends JPanel {
 		drawCentered(g, "Entrée : rejouer  ·  Échap : menu", new Font(Font.SANS_SERIF, Font.PLAIN, 14), Palette.TEXT_MUTED, BUTTON_Y + BUTTON_H + 40);
 	}
 	
+	public void drawPause(Graphics2D g) { // Écran de pause, par-dessus le plateau figé
+		g.setColor(Palette.OVERLAY);
+		g.fillRect(0, 0, Game.FRAMESIZE, Game.FRAMESIZE);
+		drawCentered(g, "Pause", new Font(Font.SANS_SERIF, Font.BOLD, 48), Palette.TEXT, Game.FRAMESIZE / 2 - 10);
+		drawCentered(g, "Niveau " + game.getDifficulty().getLabel(), new Font(Font.SANS_SERIF, Font.PLAIN, 18), game.getDifficulty().getColor(), Game.FRAMESIZE / 2 + 30);
+		drawButton(g, REPLAY_BUTTON, "Reprendre", hoverReplay, true);
+		drawButton(g, MENU_BUTTON, "Menu", hoverMenu, false);
+		drawCentered(g, "P ou Échap : reprendre", new Font(Font.SANS_SERIF, Font.PLAIN, 14), Palette.TEXT_MUTED, BUTTON_Y + BUTTON_H + 40);
+	}
+
+	private void drawPauseButton(Graphics2D g) { // Petit bouton avec deux barres, en haut à droite
+		g.setColor(hoverPause ? Palette.CARD_SELECTED : Palette.PAUSE_BUTTON);
+		g.fill(PAUSE_BUTTON);
+		g.setColor(hoverPause ? Palette.TEXT : Palette.TEXT_MUTED);
+		double barW = PAUSE_SIZE * 0.14;
+		double barH = PAUSE_SIZE * 0.42;
+		double top = PAUSE_BUTTON.getY() + (PAUSE_SIZE - barH) / 2;
+		double centerX = PAUSE_BUTTON.getX() + PAUSE_SIZE / 2.0;
+		g.fill(new RoundRectangle2D.Double(centerX - barW * 1.6, top, barW, barH, barW, barW));
+		g.fill(new RoundRectangle2D.Double(centerX + barW * 0.6, top, barW, barH, barW, barW));
+	}
+
 	private void drawButton(Graphics2D g, RoundRectangle2D button, String label, boolean hover, boolean primary) {
 		Color accent = game.getDifficulty().getColor();
 		if(primary) { // Bouton principal : rempli avec la couleur du niveau
